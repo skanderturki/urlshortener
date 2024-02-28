@@ -3,9 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const bodyParser = require('body-parser');
-const bcrypt = require('bcrypt');
-const saltRounds = 3;
-const myPlaintextPassword = 's0/\/\P4$$w0rD';
+let counter = 0;
 
 const urls = new Map();
 
@@ -31,27 +29,38 @@ app.post('/api/shorturl', async function(req, res) {
   const url = req.body.url;
   try {
     givenURL = new URL(url);
-    const hashed = await bcrypt.hash(myPlaintextPassword, saltRounds);
-    if(urls.get(hashed) === undefined) {
-      urls.set(hashed, url);
+    if(urls.get(url) === undefined || givenURL === undefined || givenURL === null) {
+      urls.set(url, ++counter);
     }
-    return res.json({ "original_url" : url, "short_url" : hashed });
+    return res.json({ "original_url" : url, "short_url" : counter });
   } catch (error) {
-    return res.status(401).json({
-      error: 'invalid url'
+    return res.status(403).json({
+      "error": 'Invalid URL'
     });
   }
 });
 
+function getByValue(map, searchValue) {
+  for (let [key, value] of map.entries()) {
+    if (value === searchValue)
+      return key;
+  }
+  return null;
+}
+
 // Your first API endpoint
-app.get('/api/shorturl/:hashed', async function(req, res) {
-  const hashed = req.params.hashed;
-  const url = urls.get(hashed);
+app.get('/api/shorturl/:short', async function(req, res) {
+  const short = req.params.short;
+  let url;
+  try {
+    url = getByValue(urls, Number(short));
+  } catch(error){
+
+  }
+  
   if ( url === undefined) {
-    console.error(err);
-    console.log('invalid URL');
     return res.status(401).json({
-      error: 'invalid url'
+      "error": 'Invalid URL'
     });
   } else {
     return res.redirect(url);
