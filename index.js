@@ -38,7 +38,7 @@ app.post('/api/shorturl', async function(req, res) {
     return res.json({ "original_url" : url, "short_url" : hashed });
   } catch (error) {
     return res.status(401).json({
-      'error': 'invalid url'
+      error: 'invalid url'
     });
   }
 });
@@ -51,7 +51,7 @@ app.get('/api/shorturl/:hashed', async function(req, res) {
     console.error(err);
     console.log('invalid URL');
     return res.status(401).json({
-      'error': 'invalid url'
+      error: 'invalid url'
     });
   } else {
     return res.redirect(url);
